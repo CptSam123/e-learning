@@ -34,7 +34,7 @@ const ForgotPassword = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            required 
           />
           <button disabled={btnLoading} className="common-btn">
             {btnLoading ? "Please Wait..." : "Forgot Password"}
