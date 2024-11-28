@@ -19,6 +19,7 @@ const Verify = () => {
     e.preventDefault();
     await verifyOtp(Number(otp), navigate);
   };
+
   return (
     <div className="auth-page">
       <div className="auth-form">
@@ -32,10 +33,9 @@ const Verify = () => {
             required
           />
           <ReCAPTCHA
-            sitekey=" 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+            sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Added test key
             onChange={onChange}
           />
-          ,
           {show && (
             <button disabled={btnLoading} type="submit" className="common-btn">
               {btnLoading ? "Please Wait..." : "Verify"}
