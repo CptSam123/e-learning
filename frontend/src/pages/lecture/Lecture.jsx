@@ -115,54 +115,8 @@ const Lecture = ({ user }) => {
     }
   };
 
-  const [completed, setCompleted] = useState("");
-  const [completedLec, setCompletedLec] = useState("");
-  const [lectLength, setLectLength] = useState("");
-  const [progress, setProgress] = useState([]);
-
-  async function fetchProgress() {
-    try {
-      const { data } = await axios.get(
-        `${server}/api/user/progress?course=${params.id}`,
-        {
-          headers: {
-            token: localStorage.getItem("token"),
-          },
-        }
-      );
-
-      setCompleted(data.courseProgressPercentage);
-      setCompletedLec(data.completedLectures);
-      setLectLength(data.allLectures);
-      setProgress(data.progress);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const addProgress = async (id) => {
-    try {
-      const { data } = await axios.post(
-        `${server}/api/user/progress?course=${params.id}&lectureId=${id}`,
-        {},
-        {
-          headers: {
-            token: localStorage.getItem("token"),
-          },
-        }
-      );
-      console.log(data.message);
-      fetchProgress();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  console.log(progress);
-
   useEffect(() => {
     fetchLectures();
-    fetchProgress();
   }, []);
   
   return (
@@ -170,131 +124,111 @@ const Lecture = ({ user }) => {
       {loading ? (
         <Loading />
       ) : (
-        <>
-          <div className="progress">
-            Lecture completed - {completedLec} out of {lectLength} <br />
-            <progress value={completed} max={100}></progress> {completed} %
+        <div className="lecture-page">
+          <div className="left">
+            {lecLoading ? (
+              <Loading />
+            ) : (
+              <>
+                {lecture.video ? (
+                  <>
+                    <video
+                      src={`${server}/${lecture.video}`}
+                      width={"100%"}
+                      controls
+                      controlsList="nodownload noremoteplayback"
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      autoPlay
+                    ></video>
+                    <h1>{lecture.title}</h1>
+                    <h3>{lecture.description}</h3>
+                  </>
+                ) : (
+                  <h1>Please Select a Lecture</h1>
+                )}
+              </>
+            )}
           </div>
-          <div className="lecture-page">
-            <div className="left">
-              {lecLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  {lecture.video ? (
-                    <>
-                      <video
-                        src={`${server}/${lecture.video}`}
-                        width={"100%"}
-                        controls
-                        controlsList="nodownload noremoteplayback"
-                        disablePictureInPicture
-                        disableRemotePlayback
-                        autoPlay
-                        onEnded={() => addProgress(lecture._id)}
-                      ></video>
-                      <h1>{lecture.title}</h1>
-                      <h3>{lecture.description}</h3>
-                    </>
-                  ) : (
-                    <h1>Please Select a Lecture</h1>
+          <div className="right">
+            {user && user.role === "admin" && (
+              <button className="common-btn" onClick={() => setShow(!show)}>
+                {show ? "Close" : "Add Lecture +"}
+              </button>
+            )}
+
+            {show && (
+              <div className="lecture-form">
+                <h2>Add Lecture</h2>
+                <form onSubmit={submitHandler}>
+                  <label htmlFor="text">Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                  />
+
+                  <label htmlFor="text">Description</label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  />
+
+                  <input
+                    type="file"
+                    placeholder="choose video"
+                    onChange={changeVideoHandler}
+                    required
+                  />
+
+                  {videoPrev && (
+                    <video
+                      src={videoPrev}
+                      alt=""
+                      width={300}
+                      controls
+                    ></video>
                   )}
-                </>
-              )}
-            </div>
-            <div className="right">
-              {user && user.role === "admin" && (
-                <button className="common-btn" onClick={() => setShow(!show)}>
-                  {show ? "Close" : "Add Lecture +"}
-                </button>
-              )}
 
-              {show && (
-                <div className="lecture-form">
-                  <h2>Add Lecture</h2>
-                  <form onSubmit={submitHandler}>
-                    <label htmlFor="text">Title</label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                    />
+                  <button
+                    disabled={btnLoading}
+                    type="submit"
+                    className="common-btn"
+                  >
+                    {btnLoading ? "Please Wait..." : "Add"}
+                  </button>
+                </form>
+              </div>
+            )}
 
-                    <label htmlFor="text">Description</label>
-                    <input
-                      type="text"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      required
-                    />
-
-                    <input
-                      type="file"
-                      placeholder="choose video"
-                      onChange={changeVideoHandler}
-                      required
-                    />
-
-                    {videoPrev && (
-                      <video
-                        src={videoPrev}
-                        alt=""
-                        width={300}
-                        controls
-                      ></video>
-                    )}
-
+            {lectures && lectures.length > 0 ? (
+              lectures.map((e, i) => (
+                <React.Fragment key={e._id}>
+                  <div
+                    onClick={() => fetchLecture(e._id)}
+                    className={`lecture-number ${lecture._id === e._id && "active"}`}
+                  >
+                    {i + 1}. {e.title}
+                  </div>
+                  {user && user.role === "admin" && (
                     <button
-                      disabled={btnLoading}
-                      type="submit"
                       className="common-btn"
+                      style={{ background: "red" }}
+                      onClick={() => deleteHandler(e._id)}
                     >
-                      {btnLoading ? "Please Wait..." : "Add"}
+                      Delete {e.title}
                     </button>
-                  </form>
-                </div>
-              )}
-
-              {lectures && lectures.length > 0 ? (
-                lectures.map((e, i) => (
-                  <React.Fragment key={e._id}> {/* Added key prop here */}
-                    <div
-                      onClick={() => fetchLecture(e._id)}
-                      className={`lecture-number ${lecture._id === e._id && "active"}`}
-                    >
-                      {i + 1}. {e.title}{" "}
-                      {progress[0] &&
-                        progress[0].completedLectures.includes(e._id) && (
-                          <span
-                            style={{
-                              background: "red",
-                              padding: "2px",
-                              borderRadius: "6px",
-                              color: "greenyellow",
-                            }}
-                          >
-                            <TiTick />
-                          </span>
-                        )}
-                    </div>
-                    {user && user.role === "admin" && (
-                      <button
-                        className="common-btn"
-                        style={{ background: "red" }}
-                        onClick={() => deleteHandler(e._id)}
-                      >
-                        Delete {e.title}
-                      </button>
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <p>No Lectures Yet!</p>
-              )}
-            </div>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <p>No Lectures Yet!</p>
+            )}
           </div>
-        </>
+        </div>
       )}
     </>
   );

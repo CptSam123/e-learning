@@ -47,25 +47,3 @@ export const fetchLecture = TryCatch(async (req, res) => {
 
   res.json({ lecture });
 });
-export const addProgress = TryCatch(async (req, res) => {
-  const progress = await Progress.findOne({
-    user: req.user._id,
-    course: req.query.course,
-  });
-
-  const { lectureId } = req.query;
-
-  if (progress.completedLectures.includes(lectureId)) {
-    return res.json({
-      message: "Progress recorded",
-    });
-  }
-
-  progress.completedLectures.push(lectureId);
-
-  await progress.save();
-
-  res.status(201).json({
-    message: "new Progress added",
-  });
-});

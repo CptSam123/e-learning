@@ -8,7 +8,7 @@ import {
   verifyUser,
 } from "../controllers/user.js";
 import { isAuth } from "../middlewares/isAuth.js";
-import { addProgress } from "../controllers/course.js";
+
 
 const router = express.Router();
 
@@ -18,6 +18,6 @@ router.post("/user/login", loginUser);
 router.get("/user/me", isAuth, myProfile);
 router.post("/user/forgot", forgotPassword);
 router.post("/user/reset", resetPassword);
-router.post("/user/progress", isAuth, addProgress);
+
 
 export default router;
